@@ -39,7 +39,7 @@ education = education.rename({"Country": "Country"})
 population = population.rename({"Country/Territory": "Country"})
 
 # INNER join per quedar-nos només amb països que surten al dataset de felicitat:
-merged = (
+merged_happiness = (
     happiness
     .join(education, on="Country", how="inner")
     .join(population, on="Country", how="inner")
@@ -54,13 +54,13 @@ class Country (pt.Model):
     Education_Index: float = pt.Field(description="Índex d'educació", ge=0, le=1)
 
 # Renombrar columnes per poder validar amb el model
-merged = merged.rename({
+merged_happiness = merged_happiness.rename({
     "Ladder score": "Ladder_score",
     "Education Index": "Education_Index"
 })
 
 # Validació del DataFrame Polars (merged)
-if Country.validate(merged, allow_superfluous_columns=True).is_empty():
+if Country.validate(merged_happiness, allow_superfluous_columns=True).is_empty():
     st.write("Dataset not valid")
 
 else:
@@ -69,10 +69,11 @@ else:
     st.write(
         "Conjunt de dades resultant de la unió (join) dels tres datasets originals, que inclou totes les columnes de cadascun i utilitza el nom del país com a identificador comú.")
     if st.checkbox("Show raw data"):
-        st.dataframe(merged)
+        st.dataframe(merged_happiness)
 
+    # -------------- PAISOS ORDENATS PER ÍNDEX DE FELICITAT ---------------
     # Ordenar el DataFrame de major a menor segons Ladder_score
-    sorted_df = merged.sort("Ladder_score", descending=True)
+    sorted_df = merged_happiness.sort("Ladder_score", descending=True)
 
     # Seleccionar només les columnes que volem mostrar
     columns = ["Country", "Ladder_score", "Education_Index", "Income"]
@@ -82,5 +83,27 @@ else:
     st.header("Països ordenats per índex de felicitat")
     st.write("Es mostra el nom del país, l’índex de felicitat, l’índex educatiu i el nivell d’ingressos.")
     st.dataframe(sorted_df)
+
+    # -------------- PAISOS AMB POBLACIÓ 2022 DESCONEGUDA ---------------
+    # LEFT join per obtenir tota la informació sobre les poblacions dels paisos:
+    merged_population = (
+        population
+        .join(education, on="Country", how="left")
+        .join(happiness, on="Country", how="left")
+    )
+
+    # Filtrar països amb població del 2022 desconeguda
+    missing_population = merged_population.filter(pl.col("2022 Population").is_null())
+
+    # Seleccionar les columnes d'interès
+    columns = ["Country", "2022 Population"]
+    missing_population = missing_population.select(columns)
+
+    # Mostrar el resultat a Streamlit
+    st.header("Països sense població 2022")
+    st.write("Nombre de paisos amb informació desconeguda sobre la població del 2022")
+    st.write(merged_population.select(pl.col("2022 Population").null_count()))
+    st.write("Llistat de països pels quals no es disposa de dades de població del 2022.")
+    st.dataframe(missing_population)
 
 
