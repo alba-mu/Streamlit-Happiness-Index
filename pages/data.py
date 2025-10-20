@@ -196,4 +196,32 @@ else:
     st.altair_chart(map_chart)
 
 
+    # -------------- 5 PAISOS MÉS FELIÇOS PER CONTINENT --------------------
+    # Convertir a LazyFrame
+    lf = merged_happiness.lazy()
+
+    # Query: ordenar, agrupar, agafar top 5 i seleccionar columnes
+    top5_lazy = (
+        lf.sort(["Continent", "Ladder_score"], descending=[False, True])
+        .group_by("Continent")
+        .agg([
+            pl.col("Country").head(5).alias("País"),
+            pl.col("Ladder_score").head(5).alias("Índex de felicitat"),
+            pl.col("Education_Index").head(5).alias("Education index"),
+            pl.col("Income").head(5).alias("Ingressos")
+        ])
+    )
+
+    # Executar la query amb collect
+    top5 = top5_lazy.collect()
+
+    # Explode per tenir cada país en una fila
+    top5 = top5.explode(["País", "Índex de felicitat", "Education index", "Ingressos"])
+
+    # Mostrem a Streamlit
+    st.header("Top 5 països més feliços per continent")
+    st.write("La següent taula mostra els 5 països més feliços de cada continent, amb el seu índex de felicitat, l’índex educatiu i el nivell d’ingressos.")
+    st.dataframe(top5)
+
+
 
