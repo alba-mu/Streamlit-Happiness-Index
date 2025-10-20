@@ -1,6 +1,7 @@
 import streamlit as st
 import polars as pl
 from urllib.parse import urljoin
+import patito as pt
 
 st.header("Index de felicitat")
 
@@ -45,8 +46,27 @@ merged = (
 )
 
 
-# --- Mostrar dataset merged ---
-st.header("Raw merged dataset")
-st.write("Conjunt de dades resultant de la unió (join) dels tres datasets originals, que inclou totes les columnes de cadascun i utilitza el nom del país com a identificador comú.")
-if st.checkbox("Show raw data"):
-    st.write(merged)
+
+# Esquema de validació per tres columnes del dataset
+class Country (pt.Model):
+    Country: str = pt.Field(description="Nom del país", unique=True, min_length=1)
+    Ladder_score: float = pt.Field(description="Índex de felicitat", ge=0, le=10)
+    Education_Index: float = pt.Field(description="Índex d'educació", ge=0, le=1)
+
+# Renombrar columnes per poder validar amb el model
+merged = merged.rename({
+    "Ladder score": "Ladder_score",
+    "Education Index": "Education_Index"
+})
+
+# Validació del DataFrame Polars (merged)
+if Country.validate(merged, allow_superfluous_columns=True).is_empty():
+    st.write("not valid dataset")
+
+else:
+    # --- Mostrar dataset merged i validat---
+    st.header("Raw merged dataset")
+    st.write(
+        "Conjunt de dades resultant de la unió (join) dels tres datasets originals, que inclou totes les columnes de cadascun i utilitza el nom del país com a identificador comú.")
+    if st.checkbox("Show raw data"):
+        st.write(merged)
