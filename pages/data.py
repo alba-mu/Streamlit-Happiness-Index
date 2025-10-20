@@ -2,6 +2,7 @@ import streamlit as st
 import polars as pl
 from urllib.parse import urljoin
 import patito as pt
+import altair as alt
 
 st.header("Index de felicitat")
 
@@ -105,5 +106,32 @@ else:
     st.write(merged_population.select(pl.col("2022 Population").null_count()))
     st.write("Llistat de països pels quals no es disposa de dades de població del 2022.")
     st.dataframe(missing_population)
+
+    # -------------- GRÀFIC POBLACIÓ vs ÍNDEX DE FELICITAT ---------------
+    # Filtrar només països amb dades de població i felicitat
+    plot_df = merged_happiness.filter(
+        (pl.col("2022 Population").is_not_null()) &
+        (pl.col("Ladder_score").is_not_null())
+    )
+
+    # Seleccionar les columnes clau
+    plot_df = plot_df.select(["Country", "2022 Population", "Ladder_score"])
+
+    # Crear gràfic de punts
+    scatter = alt.Chart(plot_df).mark_circle(size=60).encode(
+        x=alt.X("2022 Population", title="Població 2022", scale=alt.Scale(type="log")),
+        y=alt.Y("Ladder_score", title="Índex de felicitat"),
+        tooltip=["Country", "2022 Population", "Ladder_score"]
+    ).properties(
+        title="Relació entre població i índex de felicitat",
+        width=700,
+        height=400
+    ).interactive()
+
+    # Mostrem el gràfic a Streamlit
+    st.header("Gràfic de punts Població vs Índex de felicitat")
+    st.write("Aquesta visualització mostra la relació entre la població d’un país (eix X) i el seu índex de felicitat (eix Y), permetent observar com varia la felicitat en funció de la mida de la població.")
+    st.altair_chart(scatter)
+
 
 
