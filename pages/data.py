@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 import patito as pt
 import altair as alt
 
-st.header("Index de felicitat")
+st.title("ANÀLISI DE LA FELICITAT DELS PAISOS DEL MÓN")
 
 
 # URL base dels fitxers CSV
