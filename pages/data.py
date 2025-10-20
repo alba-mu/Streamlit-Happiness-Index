@@ -102,10 +102,13 @@ else:
 
     # Mostrar el resultat a Streamlit
     st.header("Països sense població 2022")
-    st.write("Nombre de paisos amb informació desconeguda sobre la població del 2022")
-    st.write(merged_population.select(pl.col("2022 Population").null_count()))
-    st.write("Llistat de països pels quals no es disposa de dades de població del 2022.")
-    st.dataframe(missing_population)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("Nombre de paisos amb informació desconeguda sobre la població del 2022")
+        st.dataframe(merged_population.select(pl.col("2022 Population").null_count()))
+    with col2:
+        st.write("Llistat de països pels quals no es disposa de dades de població del 2022.")
+        st.dataframe(missing_population)
 
 
     # -------------- GRÀFIC POBLACIÓ vs ÍNDEX DE FELICITAT ---------------
