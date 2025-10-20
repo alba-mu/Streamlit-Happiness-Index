@@ -6,7 +6,7 @@ st.header("Index de felicitat")
 
 
 # URL base dels fitxers CSV
-base_url = "https://gitlab.com/xtec/python/polars-data/-/tree/main"
+base_url = "https://gitlab.com/xtec/python/polars-data/-/raw/main/"
 
 
 # Definició funcions per carregar els fitxers csv en datasets de polars
@@ -31,8 +31,8 @@ happiness = load_happiness()
 population = load_population()
 
 st.header("Education and Income")
-education_income.head()
+st.write(education_income.head())
 st.header("Happiness")
-happiness.head()
+st.write(happiness.head())
 st.header("Population")
-population.head()
+st.write(population.head())
