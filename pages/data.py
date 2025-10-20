@@ -25,14 +25,28 @@ def load_population():
     population = pl.read_csv(urljoin(base_url, "world-population.csv"))
     return population
 
+
 # Carregar datasets
-education_income = load_education_and_income()
+education = load_education_and_income()
 happiness = load_happiness()
 population = load_population()
 
-st.header("Education and Income")
-st.write(education_income.head())
-st.header("Happiness")
-st.write(happiness.head())
-st.header("Population")
-st.write(population.head())
+
+# Rename de les columnes amb informació sobre el país per poder usar-les com a id pel join
+happiness = happiness.rename({"Country name": "Country"})
+education = education.rename({"Country": "Country"})
+population = population.rename({"Country/Territory": "Country"})
+
+# INNER join per quedar-nos només amb països que surten al dataset de felicitat:
+merged = (
+    happiness
+    .join(education, on="Country", how="inner")
+    .join(population, on="Country", how="inner")
+)
+
+
+# --- Mostrar dataset merged ---
+st.header("Raw merged dataset")
+st.write("Conjunt de dades resultant de la unió (join) dels tres datasets originals, que inclou totes les columnes de cadascun i utilitza el nom del país com a identificador comú.")
+if st.checkbox("Show raw data"):
+    st.write(merged)
