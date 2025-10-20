@@ -133,5 +133,68 @@ else:
     st.write("Aquesta visualització mostra la relació entre la població d’un país (eix X) i el seu índex de felicitat (eix Y), permetent observar com varia la felicitat en funció de la mida de la població.")
     st.altair_chart(scatter)
 
+    # ------------ MAPA DEL MÓN AMB MITJANA D'INDEX DE FELICITAT PER CONTINENT -----------------
+    # Mitjana de l'índex de felicitat per continent
+    continent_avg = merged_happiness.group_by("Continent").agg(
+        pl.col("Ladder_score").mean().alias("Average_Happiness")
+    )
+
+    # Coordenades aproximades per centrar els continents al mapa
+    continent_coords = {
+        "Africa": {"lat": 0, "lon": 20},
+        "Asia": {"lat": 35, "lon": 100},
+        "Europe": {"lat": 50, "lon": 10},
+        "North America": {"lat": 50, "lon": -100},
+        "South America": {"lat": -15, "lon": -60},
+        "Oceania": {"lat": -25, "lon": 135},
+    }
+
+    # Afegim latitud i longitud amb with_columns
+    continent_avg = continent_avg.with_columns([
+        pl.col("Continent").map_elements(lambda c: continent_coords[c]["lat"], return_dtype=pl.Float64).alias("lat"),
+        pl.col("Continent").map_elements(lambda c: continent_coords[c]["lon"], return_dtype=pl.Float64).alias("lon")
+    ])
+
+    # Creem el mapa base amb les fronteres mundials
+    world_map = alt.topo_feature("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json", "countries")
+
+    base = alt.Chart(world_map).mark_geoshape(
+        fill="#e0e0e0",
+        stroke="white"
+    ).project("naturalEarth1").properties(
+        width=800,
+        height=400
+    )
+
+    # Afegim els punts amb la mitjana de felicitat
+    points = alt.Chart(continent_avg).mark_circle(size=400, color="red").encode(
+        longitude="lon:Q",
+        latitude="lat:Q",
+        tooltip=["Continent", alt.Tooltip("Average_Happiness", format=".2f")]
+    )
+
+    # Afegim text amb el valor exacte
+    labels = alt.Chart(continent_avg).mark_text(
+        align="center",
+        baseline="middle",
+        dx=0,
+        dy=-10,
+        fontSize=12,
+        fontWeight="bold",
+        color="black"
+    ).encode(
+        longitude="lon:Q",
+        latitude="lat:Q",
+        text=alt.Text("Average_Happiness", format=".2f"),
+        tooltip=["Continent", alt.Tooltip("Average_Happiness", format=".2f")]
+    )
+
+    # Combinem el mapa, punts i labels
+    map_chart = base + points + labels
+
+    # Mostrem a Streamlit
+    st.header("Mitjana de l'índex de felicitat per continent")
+    st.altair_chart(map_chart)
+
 
 
