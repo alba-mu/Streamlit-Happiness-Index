@@ -61,7 +61,7 @@ merged = merged.rename({
 
 # Validació del DataFrame Polars (merged)
 if Country.validate(merged, allow_superfluous_columns=True).is_empty():
-    st.write("not valid dataset")
+    st.write("Dataset not valid")
 
 else:
     # --- Mostrar dataset merged i validat---
@@ -69,4 +69,18 @@ else:
     st.write(
         "Conjunt de dades resultant de la unió (join) dels tres datasets originals, que inclou totes les columnes de cadascun i utilitza el nom del país com a identificador comú.")
     if st.checkbox("Show raw data"):
-        st.write(merged)
+        st.dataframe(merged)
+
+    # Ordenar el DataFrame de major a menor segons Ladder_score
+    sorted_df = merged.sort("Ladder_score", descending=True)
+
+    # Seleccionar només les columnes que volem mostrar
+    columns = ["Country", "Ladder_score", "Education_Index", "Income"]
+    sorted_df = sorted_df.select(columns)
+
+    # Mostrar el resultat a Streamlit
+    st.header("Països ordenats per índex de felicitat")
+    st.write("Es mostra el nom del país, l’índex de felicitat, l’índex educatiu i el nivell d’ingressos.")
+    st.dataframe(sorted_df)
+
+
