@@ -1,6 +1,9 @@
-def main():
-    print("Hello from ecb-1!")
+import streamlit as st
+
+data = st.Page("pages/data.py", title="data")
 
 
-if __name__ == "__main__":
-    main()
+pg = st.navigation([data])
+
+st.set_page_config(page_title="Index de felicitat", page_icon=":grinning:")
+pg.run()
