@@ -225,6 +225,9 @@ if missing_continent:
 # Convertir a LazyFrame
 lf = merged_happiness.lazy()
 
+# Filtrar països amb continent assignat
+lf = merged_happiness.filter(pl.col("Continent").is_not_null()).lazy()
+
 # Query: ordenar, agrupar, agafar top 5 i seleccionar columnes
 top5_lazy = (
     lf.sort(["Continent", "Ladder_score"], descending=[False, True])
