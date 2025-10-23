@@ -59,6 +59,14 @@ merged_happiness = merged_happiness.rename({
     "Education Index": "Education_Index"
 })
 
+# Omplir valors nuls de Education_Index
+merged_happiness = merged_happiness.with_columns(
+    pl.col("Education_Index").fill_null(0)
+)  
+
+# Eliminar duplicats segons Country
+merged_happiness = merged_happiness.unique(subset="Country")
+
 # Validació del DataFrame Polars (merged)
 if Country.validate(merged_happiness, allow_superfluous_columns=True, allow_missing_columns=True).is_empty():
     st.write("Dataset not valid")
