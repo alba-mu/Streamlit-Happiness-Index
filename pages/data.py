@@ -1,9 +1,9 @@
 import streamlit as st
 import polars as pl
 from urllib.parse import urljoin
-import patito as pt
 import altair as alt
 from country_normalization import country_name_map, normalize_country_column
+from model import Country
 
 
 st.title("ANÀLISI DE LA FELICITAT DELS PAISOS DEL MÓN")
@@ -27,13 +27,13 @@ def load_population():
     return pl.read_csv(urljoin(base_url, "world-population.csv"))
      
 
-
-# Carregar datasets
+# ------------------- CÀRREGA DE DATASETS -----------------------------
 education = load_education_and_income()
 happiness = load_happiness()
 population = load_population()
 
 
+# --------------------------- JOIN -------------------------------------
 # Rename de les columnes amb informació sobre el país per poder usar-les com a id pel join
 happiness = happiness.rename({"Country name": "Country"})
 education = education.rename({"Country": "Country"})
@@ -52,11 +52,38 @@ merged_happiness = (
 
 )
 
+# -------------------------- VALIDACIÓ ------------------------------
 # Renombrar columnes per poder validar amb el model
 merged_happiness = merged_happiness.rename({
     "Ladder score": "Ladder_score",
     "Education Index": "Education_Index"
 })
+
+# Validació del DataFrame Polars (merged)
+if Country.validate(merged_happiness, allow_superfluous_columns=True, allow_missing_columns=True).is_empty():
+    st.write("Dataset not valid")
+
+else:
+    # --- Mostrar dataset merged i validat---
+    st.header("Raw merged dataset")
+    st.write(
+        "Conjunt de dades resultant de la unió (join) dels tres datasets originals, que inclou totes les columnes de cadascun i utilitza el nom del país com a identificador comú.")
+    st.markdown("""
+        ## Procés de normalització de noms de països
+
+        En els tres datasets utilitzats (`world-happiness`, `world-population` i `world-education`) s'ha detectat que alguns països apareixien amb noms diferents (per exemple, "Czechia" vs "Czech Republic" o "Turkiye" vs "Turkey").  
+
+        Per garantir que les dades es poguessin unir correctament:
+        1. S'ha creat un **diccionari de normalització** amb les correspondències entre noms diferents.
+        2. S'ha aplicat aquest diccionari a la columna `Country` de cada dataset.
+        3. S'ha realitzat un **join** utilitzant `Country` com a identificador unificat.
+        4. Finalment, s'han identificat els països que no tenen dades de població del 2022 per poder mostrar-los a part.
+
+        Aquesta normalització assegura que els països coincideixin entre datasets i evita errors en l'anàlisi combinada de felicitat, educació i població.
+        """)
+    
+    if st.checkbox("Show raw data"):
+        st.dataframe(merged_happiness)
 
 
 

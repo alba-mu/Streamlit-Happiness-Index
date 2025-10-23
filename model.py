@@ -8,14 +8,3 @@ class Country (pt.Model):
     Ladder_score: float = pt.Field(description="Índex de felicitat", ge=0, le=10)
     Education_Index: float = pt.Field(description="Índex d'educació", ge=0, le=1)
 
-# Validació del DataFrame Polars (merged)
-if Country.validate(merged_happiness, allow_superfluous_columns=True).is_empty():
-    st.write("Dataset not valid")
-
-else:
-    # --- Mostrar dataset merged i validat---
-    st.header("Raw merged dataset")
-    st.write(
-        "Conjunt de dades resultant de la unió (join) dels tres datasets originals, que inclou totes les columnes de cadascun i utilitza el nom del país com a identificador comú.")
-    if st.checkbox("Show raw data"):
-        st.dataframe(merged_happiness)
