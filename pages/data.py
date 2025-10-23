@@ -77,7 +77,7 @@ else:
     st.write(
         "Conjunt de dades resultant de la unió (join) dels tres datasets originals, que inclou totes les columnes de cadascun i utilitza el nom del país com a identificador comú.")
     st.markdown("""
-        ## Procés de normalització de noms de països
+        ### Procés de normalització de noms de països
 
         En els tres datasets utilitzats (`world-happiness`, `world-population` i `world-education`) s'ha detectat que alguns països apareixien amb noms diferents (per exemple, "Czechia" vs "Czech Republic" o "Turkiye" vs "Turkey").  
 
@@ -120,7 +120,7 @@ with col1:
     st.write("Nombre de paisos amb informació desconeguda sobre la població del 2022")
     st.write(len(missing_population))
 with col2:
-    st.write("Llistat de països pels quals no es disposa de dades de població del 2022.")
+    st.write("Països pels quals no es disposa de dades de població del 2022.")
     st.markdown(missing_population)
 
 
@@ -153,9 +153,13 @@ st.altair_chart(scatter)
 
 
 # ------------ MAPA DEL MÓN AMB MITJANA D'INDEX DE FELICITAT PER CONTINENT -----------------
-# Mitjana de l'índex de felicitat per continent
-continent_avg = (merged_happiness.group_by("Continent")
-                    .agg(pl.col("Ladder_score").mean().alias("Average_Happiness")))
+# Filtrar països amb continent assignat i calcular mitjana de l'índex de felicitat per continent
+continent_avg = (
+    merged_happiness
+    .filter(pl.col("Continent").is_not_null())  # <-- eliminar països sense continent [Kosovo]
+    .group_by("Continent")
+    .agg(pl.col("Ladder_score").mean().alias("Average_Happiness"))
+)
 
 # Coordenades aproximades per centrar els continents al mapa
 continent_coords = {
@@ -176,15 +180,15 @@ continent_avg = continent_avg.with_columns([
 # Crear el mapa base amb les fronteres mundials
 world_map = alt.topo_feature("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json", "countries")
 
-base = (alt.Chart(world_map).mark_geoshape()
+base = (alt.Chart(world_map).mark_geoshape(fill='lightgrey', stroke='white', strokeWidth=0.5)
             .project("naturalEarth1")
             .properties(
-                width=800,
-                height=400
+                width=1000,
+                height=600
             ))
 
 # Afegir els punts amb la mitjana de felicitat
-points = alt.Chart(continent_avg).mark_circle(size=400, color="red").encode(
+points = alt.Chart(continent_avg).mark_circle(size=1500, color="black").encode(
     longitude="lon:Q",
     latitude="lat:Q",
     tooltip=["Continent", alt.Tooltip("Average_Happiness", format=".2f")]
@@ -194,7 +198,7 @@ points = alt.Chart(continent_avg).mark_circle(size=400, color="red").encode(
 labels = alt.Chart(continent_avg).mark_text(
     align="center",
     baseline="middle",
-    fontSize=12,
+    fontSize=18,
     fontWeight="bold",
     color="white"
 ).encode(
@@ -210,6 +214,11 @@ map_chart = base + points + labels
 # Mostrar a Streamlit
 st.header("Mitjana de l'índex de felicitat per continent")
 st.altair_chart(map_chart)
+
+# Mostrar països sense continent
+missing_continent = merged_happiness.filter(pl.col("Continent").is_null())["Country"].to_list()
+if missing_continent:
+    st.warning(f"Països sense continent assignat: {missing_continent}")
 
 
 # -------------- 5 PAISOS MÉS FELIÇOS PER CONTINENT --------------------
