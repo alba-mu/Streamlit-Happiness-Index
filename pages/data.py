@@ -285,5 +285,51 @@ st.header("Top 5 països més feliços per continent")
 st.write("La següent taula mostra els 5 països més feliços de cada continent, amb el seu índex de felicitat, l’índex educatiu i el nivell d’ingressos.")
 st.dataframe(top5)
 
+# ---------------------- FELICITAT PER COMBINACIÓ DE EDUCATION LEVEL I INCOME -------------------
+# -------------- TAULA ------------------
+# Definir l'ordre de les categories
+education_order = [
+    "Very High Education Level",
+    "High to Moderate Education Level",
+    "Low to Moderate Education Level",
+    "Very Low Education Level"
+]
 
+income_order = [
+    "High income",
+    "Upper middle income",
+    "Lower middle income",
+    "Low income"
+]
 
+# Filtrar només països amb dades d'Education_Level i Income
+df = merged_happiness.filter(
+    (pl.col("Education_Level").is_not_null()) &
+    (pl.col("Income").is_not_null())
+)
+
+# Agrupar per Education_Level i Income i calcular mitjana Ladder_score
+agg_df = (
+    df.group_by(["Education_Level", "Income"])
+    .agg(pl.col("Ladder_score").mean().alias("Average_Happiness"))
+    .sort(["Education_Level", "Income"])
+)
+
+# Mostrar taula
+st.header("Mitjana de felicitat per combinació Education Level i Income")
+st.dataframe(agg_df)
+
+# ------------ HEATMAP ---------------
+# Heatmap amb ordre de categories
+heatmap = alt.Chart(agg_df.to_pandas()).mark_rect().encode(
+    x=alt.X("Education_Level:N", title="Education Level", sort=education_order),
+    y=alt.Y("Income:N", title="Income", sort=income_order),
+    color=alt.Color("Average_Happiness:Q", title="Mitjana Felicitat", scale=alt.Scale(scheme="viridis")),
+    tooltip=["Education_Level", "Income", alt.Tooltip("Average_Happiness", format=".2f")]
+).properties(
+    width=600,
+    height=400,
+    title="Heatmap: Mitjana d'índex de felicitat per nivell educatiu i nivell d'ingressos"
+)
+
+st.altair_chart(heatmap)
