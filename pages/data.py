@@ -285,6 +285,7 @@ st.header("Top 5 països més feliços per continent")
 st.write("La següent taula mostra els 5 països més feliços de cada continent, amb el seu índex de felicitat, l’índex educatiu i el nivell d’ingressos.")
 st.dataframe(top5)
 
+
 # ---------------------- FELICITAT PER COMBINACIÓ DE EDUCATION LEVEL I INCOME -------------------
 # -------------- TAULA ------------------
 # Definir l'ordre de les categories
@@ -317,7 +318,16 @@ agg_df = (
 
 # Mostrar taula
 st.header("Mitjana de felicitat per combinació Education Level i Income")
-st.dataframe(agg_df)
+col1, col2 = st.columns(2)
+with col1:
+    st.write("Aquesta secció mostra com varia la felicitat mitjana dels països segons el "
+             "nivell educatiu i el nivell d’ingressos. Cada combinació de valors "
+             "(per exemple, High income i High to Moderate Education Level) representa un "
+             "grup de països amb característiques similars. ")
+    st.write("La taula següent mostra la mitjana de l’índex de felicitat per a cada combinació.")
+
+with col2:
+    st.dataframe(agg_df)
 
 # ------------ HEATMAP ---------------
 # Heatmap amb ordre de categories
@@ -331,5 +341,11 @@ heatmap = alt.Chart(agg_df.to_pandas()).mark_rect().encode(
     height=400,
     title="Heatmap: Mitjana d'índex de felicitat per nivell educatiu i nivell d'ingressos"
 )
+
+st.write("Al heatmap, els colors més clars indiquen una felicitat mitjana més alta, mentre "
+         "que els colors més foscos representen valors més baixos. Això permet observar patrons "
+         "generals, com ara que els països amb un nivell d’ingressos i educació més elevats "
+         "tendeixen a mostrar índexs de felicitat més alts.")
+
 
 st.altair_chart(heatmap)
