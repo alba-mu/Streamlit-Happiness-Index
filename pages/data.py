@@ -2,8 +2,8 @@ import streamlit as st
 import polars as pl
 from urllib.parse import urljoin
 import altair as alt
-from country_normalization import country_name_map, normalize_country_column
-from model import Country
+from country_normalization import normalize_country_column
+from models.Country import Country
 
 st.set_page_config(layout="wide")
 

@@ -13,10 +13,10 @@ country_name_map = {
     # --- Variants entre education i els altres ---
     "Cabo Verde": "Cape Verde",
     "Côte d'Ivoire": "Ivory Coast",
-    "Lao People\\'s Dem. Rep": "Laos",
+    "Lao People's Dem. Rep": "Laos",
     "United States of America": "United States",
     "Brunei Darussalam": "Brunei",
-    "Dem. People\\'s Rep. Korea": "North Korea",
+    "Dem. People's Rep. Korea": "North Korea",
     "Dem. Rep. of the Congo": "Congo (Kinshasa)",
     "China Hong Kong SAR": "Hong Kong S.A.R. of China",
     "Republic of Korea": "South Korea",
