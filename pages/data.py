@@ -56,20 +56,56 @@ merged_happiness = (
 # -------------------------- VALIDACIÓ ------------------------------
 # Renombrar columnes per poder validar amb el model
 merged_happiness = merged_happiness.rename({
+    "Country": "Country",
+    "Regional indicator": "Regional_indicator",
     "Ladder score": "Ladder_score",
-    "Education Index": "Education_Index"
+    "upperwhisker": "upperwhisker",
+    "lowerwhisker": "lowerwhisker",
+    "Log GDP per capita": "Log_GDP_per_capita",
+    "Social support": "Social_support",
+    "Healthy life expectancy": "Healthy_life_expectancy",
+    "Freedom to make life choices": "Freedom_to_make_life_choices",
+    "Generosity": "Generosity",
+    "Perceptions of corruption": "Perceptions_of_corruption",
+    "Dystopia + residual": "Dystopia_residual",
+    "Rank": "Rank",
+    "CCA3": "CCA3",
+    "Capital": "Capital",
+    "Continent": "Continent",
+    "2022 Population": "Population_2022",
+    "2020 Population": "Population_2020",
+    "2015 Population": "Population_2015",
+    "2010 Population": "Population_2010",
+    "2000 Population": "Population_2000",
+    "1990 Population": "Population_1990",
+    "1980 Population": "Population_1980",
+    "1970 Population": "Population_1970",
+    "Area (km²)": "Area_km2",
+    "Density (per km²)": "Density_per_km2",
+    "Growth Rate": "Growth_Rate",
+    "World Population Percentage": "World_Population_Percentage",
+    "Education Index": "Education_Index",
+    "Education Level": "Education_Level",
+    "Income": "Income"
 })
 
 # Omplir valors nuls de Education_Index
 merged_happiness = merged_happiness.with_columns(
     pl.col("Education_Index").fill_null(0)
-)  
+)
 
 # Eliminar duplicats segons Country
 merged_happiness = merged_happiness.unique(subset="Country")
 
 # Validació del DataFrame Polars (merged)
-if Country.validate(merged_happiness, allow_superfluous_columns=True, allow_missing_columns=True).is_empty():
+validation_result = Country.validate(
+    merged_happiness,
+    allow_superfluous_columns=True,
+    allow_missing_columns=True
+)
+
+# Validació del DataFrame Polars (merged)
+if validation_result.is_empty():
     st.write("Dataset not valid")
 
 else:
@@ -111,7 +147,7 @@ st.dataframe(sorted_df)
 
 # -------------- PAISOS AMB POBLACIÓ 2022 DESCONEGUDA ---------------
 # Filtrar països del dataset happiness amb població del 2022 desconeguda
-missing_population = merged_happiness.filter(pl.col("2022 Population").is_null())["Country"].to_list()
+missing_population = merged_happiness.filter(pl.col("Population_2022").is_null())["Country"].to_list()
 
 # Mostrar el resultat a Streamlit
 st.header("Països sense població 2022")
@@ -127,18 +163,18 @@ with col2:
 # -------------- GRÀFIC POBLACIÓ vs ÍNDEX DE FELICITAT ---------------
 # Filtrar només països amb dades de població i felicitat
 plot_df = merged_happiness.filter(
-    (pl.col("2022 Population").is_not_null()) &
+    (pl.col("Population_2022").is_not_null()) &
     (pl.col("Ladder_score").is_not_null())
 )
 
 # Seleccionar les columnes clau
-plot_df = plot_df.select(["Country", "2022 Population", "Ladder_score"])
+plot_df = plot_df.select(["Country", "Population_2022", "Ladder_score"])
 
 # Crear gràfic de punts
 scatter = alt.Chart(plot_df).mark_circle(size=60).encode(
-    x=alt.X("2022 Population", title="Població 2022", scale=alt.Scale(type="log")),
+    x=alt.X("Population_2022", title="Població 2022", scale=alt.Scale(type="log")),
     y=alt.Y("Ladder_score", title="Índex de felicitat"),
-    tooltip=["Country", "2022 Population", "Ladder_score"]
+    tooltip=["Country", "Population_2022", "Ladder_score"]
 ).properties(
     title="Relació entre població i índex de felicitat",
     width=700,
@@ -222,8 +258,6 @@ if missing_continent:
 
 
 # -------------- 5 PAISOS MÉS FELIÇOS PER CONTINENT --------------------
-# Convertir a LazyFrame
-lf = merged_happiness.lazy()
 
 # Filtrar països amb continent assignat
 lf = merged_happiness.filter(pl.col("Continent").is_not_null()).lazy()
