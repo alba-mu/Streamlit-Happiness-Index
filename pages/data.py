@@ -5,8 +5,9 @@ import altair as alt
 from country_normalization import country_name_map, normalize_country_column
 from model import Country
 
+st.set_page_config(layout="wide")
 
-st.title("ANÀLISI DE LA FELICITAT DELS PAISOS DEL MÓN")
+st.title("ANÀLISI DE L'ÍNDEX DE FELICITAT DELS PAÏSOS DEL MÓN")
 
 
 # URL base dels fitxers CSV
@@ -85,8 +86,7 @@ else:
         1. S'ha creat un **diccionari de normalització** amb les correspondències entre noms diferents.
         2. S'ha aplicat aquest diccionari a la columna `Country` de cada dataset.
         3. S'ha realitzat un **join** utilitzant `Country` com a identificador unificat.
-        4. Finalment, s'han identificat els països que no tenen dades de població del 2022 per poder mostrar-los a part.
-
+        
         Aquesta normalització assegura que els països coincideixin entre datasets i evita errors en l'anàlisi combinada de felicitat, educació i població.
         """)
     
