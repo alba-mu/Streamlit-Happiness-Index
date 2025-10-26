@@ -288,21 +288,6 @@ st.dataframe(top5)
 
 # ---------------------- FELICITAT PER COMBINACIÓ DE EDUCATION LEVEL I INCOME -------------------
 # -------------- TAULA ------------------
-# Definir l'ordre de les categories
-education_order = [
-    "Very High Education Level",
-    "High to Moderate Education Level",
-    "Low to Moderate Education Level",
-    "Very Low Education Level"
-]
-
-income_order = [
-    "High income",
-    "Upper middle income",
-    "Lower middle income",
-    "Low income"
-]
-
 # Filtrar només països amb dades d'Education_Level i Income
 df = merged_happiness.filter(
     (pl.col("Education_Level").is_not_null()) &
@@ -323,15 +308,30 @@ with col1:
     st.write("Aquesta secció mostra com varia la felicitat mitjana dels països segons el "
              "nivell educatiu i el nivell d’ingressos. Cada combinació de valors "
              "(per exemple, High income i High to Moderate Education Level) representa un "
-             "grup de països amb característiques similars. ")
-    st.write("La taula següent mostra la mitjana de l’índex de felicitat per a cada combinació.")
+             "grup de països amb característiques similars. En total hi ha 16 combinacions, però no totes tenen dades.")
+    st.write(
+        "La taula següent mostra la mitjana de l’índex de felicitat per a cada combinació de la qual existeixen dades.")
 
 with col2:
     st.dataframe(agg_df)
 
 # ------------ HEATMAP ---------------
+# Definir l'ordre de les categories
+education_order = [
+    "Very High Education Level",
+    "High to Moderate Education Level",
+    "Low to Moderate Education Level",
+    "Very Low Education Level"
+]
+
+income_order = [
+    "High income",
+    "Upper middle income",
+    "Lower middle income",
+    "Low income"
+]
 # Heatmap amb ordre de categories
-heatmap = alt.Chart(agg_df.to_pandas()).mark_rect().encode(
+heatmap = alt.Chart(agg_df).mark_rect().encode(
     x=alt.X("Education_Level:N", title="Education Level", sort=education_order),
     y=alt.Y("Income:N", title="Income", sort=income_order),
     color=alt.Color("Average_Happiness:Q", title="Mitjana Felicitat", scale=alt.Scale(scheme="viridis")),
